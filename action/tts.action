@@ -1,0 +1,9 @@
+#what's passed to the function
+string text
+---
+#the result
+int8[] soundFile
+int32 size
+---
+# Define a feedback message
+float32 percent_complete

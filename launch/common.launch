@@ -1,0 +1,6 @@
+<launch>
+	<group ns="lab_common">
+		<node pkg="lab_common" name="audio_Server" type="audio_node"/>
+		<node pkg="lab_common" name="tts_Server" type="tts_pico_node"/>
+	</group>
+</launch>	

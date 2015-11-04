@@ -1,0 +1,8 @@
+int8[] soundFile
+int32 size
+int32 rate 
+---
+bool complete
+---
+# Define a feedback message
+float32 percent_complete
