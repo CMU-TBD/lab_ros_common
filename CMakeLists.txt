@@ -66,6 +66,7 @@ add_action_files(
 	FILES 
 	tts.action
   playAudio.action
+  speak.action
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -151,6 +152,13 @@ target_link_libraries(tts_pico_node
 )
 
 add_executable(audio_node src/audio.cpp)
+target_link_libraries(audio_node
+  ${catkin_LIBRARIES}
+  -lasound
+  -lpthread
+)
+
+add_executable(audio_controller_node src/audio_controller.cpp)
 target_link_libraries(audio_node
   ${catkin_LIBRARIES}
   -lasound
