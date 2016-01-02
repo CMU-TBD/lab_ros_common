@@ -159,7 +159,7 @@ target_link_libraries(audio_node
 )
 
 add_executable(audio_controller_node src/audio_controller.cpp)
-target_link_libraries(audio_node
+target_link_libraries(audio_controller_node
   ${catkin_LIBRARIES}
   -lasound
   -lpthread
