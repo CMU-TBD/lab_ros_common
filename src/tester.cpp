@@ -3,6 +3,7 @@
 #include <actionlib/client/terminal_state.h>
 #include <lab_common/ttsAction.h>
 #include <lab_common/playAudioAction.h>
+#include <lab_common/speakAction.h>
 #include <vector>
 #include <fstream>
 #include <streambuf>
@@ -48,10 +49,26 @@ void speak(std::string text, actionlib::SimpleActionClient<lab_common::playAudio
 	}
 }
 
+void _speak(std::string text, actionlib::SimpleActionClient<lab_common::speakAction>* asc){
+	std::cout << "waiting for server" << std::endl;
+	asc->waitForServer();
+	std::cout << "found server" << std::endl;
+	lab_common::speakGoal goal;
+	goal.text = text;
+	asc->sendGoal(goal);
+	std::cout << "sent goal" << std::endl;
+	asc->waitForResult();
+}
+
 
 int main(int argc, char **argv){
 
 	ros::init(argc, argv, "audio_tester");
+
+	actionlib::SimpleActionClient<lab_common::speakAction> asc("lab_common/speak", true);
+	_speak("Hi, I am Joe", &asc);
+
+	/*
 	actionlib::SimpleActionClient<lab_common::playAudioAction> acp("lab_common/playAudio", true);
 	speak("Hello World",&acp);
 	acp.waitForResult();
@@ -61,5 +78,5 @@ int main(int argc, char **argv){
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	acp.cancelAllGoals();
 	speak("It works",&acp);
-
+	*/
 }
