@@ -105,10 +105,10 @@ add_action_files(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES lab_common
-#  CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES lab_common
+  CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs
+  DEPENDS system_lib
 )
 
 ###########
@@ -130,7 +130,6 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(lab_common ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 # add_executable(lab_common_node src/lab_common_node.cpp)
@@ -144,14 +143,19 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+#add_dependencies(lab_common_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
 #create the executable for the pico_tts node 
 add_executable(tts_pico_node src/pico_tts.cpp)
+add_dependencies(tts_pico_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(tts_pico_node
 	${catkin_LIBRARIES}
 	-lttspico
 )
 
 add_executable(audio_node src/audio.cpp)
+add_dependencies(audio_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(audio_node
   ${catkin_LIBRARIES}
   -lasound
@@ -159,6 +163,7 @@ target_link_libraries(audio_node
 )
 
 add_executable(audio_controller_node src/audio_controller.cpp)
+add_dependencies(audio_controller_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(audio_controller_node
   ${catkin_LIBRARIES}
   -lasound
@@ -167,6 +172,7 @@ target_link_libraries(audio_controller_node
 
 
 add_executable(pico_test_node src/tester.cpp)
+add_dependencies(pico_test_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(pico_test_node
   ${catkin_LIBRARIES}
 )

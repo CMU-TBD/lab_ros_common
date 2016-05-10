@@ -42,6 +42,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>genmsg</buildtool_depend>
   <build_depend>actionlib</build_depend>
+  <build_depend>genmsg</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
@@ -55,6 +56,7 @@
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>genmsg</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
