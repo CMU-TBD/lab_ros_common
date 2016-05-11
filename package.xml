@@ -33,6 +33,7 @@
   <!-- Examples: -->
   <!-- Use build_depend for packages you need at compile time: -->
   <build_depend>message_generation</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
   <!-- Use run_depend for packages you need at runtime: -->
@@ -57,6 +58,7 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>genmsg</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

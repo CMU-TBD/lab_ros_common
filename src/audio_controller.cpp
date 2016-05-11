@@ -13,13 +13,54 @@
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
+#include <festival/festival.h>
+
+#include <dynamic_reconfigure/server.h>
+#include <lab_common/SettingsConfig.h>
+
 
 typedef actionlib::SimpleActionServer<lab_common::speakAction> ActionServer;
+
+int tts_sys = 0;
+bool festival_started = false;
+
+bool speak_festival(std::string text){
+	/*
+	Wrapper for calling the festival TTS function
+	*/
+
+	//We only need to initialize festival_initial once.
+	//Use a global variance
+    if(!festival_started){
+    	int heap_size = 2000000;  // default scheme heap size
+    	int load_init_files = 1; // we want the festival init files loaded
+    	festival_initialize(load_init_files,heap_size);
+    	festival_started = true;
+    }
+    //actually say the text
+    bool worked = festival_say_text(EST_String(text.c_str()));
+    //not sure whether the tidy up actually do anything
+    festival_tidy_up();
+    //return whether it actually worked
+    return worked;
+}
+
 
 void speak(const lab_common::speakGoalConstPtr& ori_goal, actionlib::SimpleActionClient<lab_common::ttsAction>* ac, 
 	 actionlib::SimpleActionClient<lab_common::playAudioAction>* acp, ActionServer *as){
 	//get the text we want to speak
 	std::string text = ori_goal->text;
+
+	if(tts_sys == 1){
+		//This means the config file sets to festival
+		//use Festival for TTS
+	    lab_common::speakResult callResult;
+	    callResult.complete = speak_festival(text);
+	    //set the method as success and pass in the result object
+	    as->setSucceeded(callResult);
+	    return;
+	}
+
 
 	//set a goal
 	lab_common::ttsGoal goal;
@@ -62,10 +103,22 @@ void callback(actionlib::SimpleActionClient<lab_common::ttsAction>* ac,
 	//nothing now, but who knows
 }
 
+void configCallback(lab_common::SettingsConfig &config, uint32_t level){
+	tts_sys = config.tts_sys;
+}
+
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "audio_controller");
 	ros::NodeHandle n;
+
+
+	//create the dynamic reconfigure server
+	dynamic_reconfigure::Server<lab_common::SettingsConfig> server;
+	dynamic_reconfigure::Server<lab_common::SettingsConfig>::CallbackType f;
+
+	f = boost::bind(&configCallback, _1, _2);
+	server.setCallback(f);
 
 	//create the clients
 	actionlib::SimpleActionClient<lab_common::playAudioAction> acp("playAudio", true);
@@ -82,6 +135,7 @@ int main(int argc, char **argv)
   	actionServer.start();
   	//ros::Subscriber sub = n.subscribe<std_msgs::Empty>("stopAudio",1,callback);
   	ROS_INFO("Ready for speak");
+  	//speak2("Hello World");
   	ros::spin();
   	return 0;
 }

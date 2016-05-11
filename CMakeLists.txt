@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   roscpp
   rospy
+  dynamic_reconfigure
   std_msgs
 )
 
@@ -90,10 +91,9 @@ add_action_files(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/Settings.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -107,7 +107,7 @@ add_action_files(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lab_common
-  CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs
+  CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs dynamic_reconfigure
   DEPENDS system_lib
 )
 
@@ -120,6 +120,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  /usr/include/estools
 )
 
 ## Declare a C++ library
@@ -163,11 +164,15 @@ target_link_libraries(audio_node
 )
 
 add_executable(audio_controller_node src/audio_controller.cpp)
-add_dependencies(audio_controller_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(audio_controller_node ${PROJECT_NAME}_gencfg ${${PROJECT_NAME}_EXPORTED_TARGETS}  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(audio_controller_node
   ${catkin_LIBRARIES}
   -lasound
   -lpthread
+  Festival
+  estools
+  estbase
+  eststring
 )
 
 

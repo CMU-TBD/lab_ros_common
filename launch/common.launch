@@ -4,4 +4,4 @@
 		<node pkg="lab_common" name="tts_Server" type="tts_pico_node"/>
 		<node pkg="lab_common" name="speak_Server" type="audio_controller_node"/>
 	</group>
-</launch>	
+</launch>
