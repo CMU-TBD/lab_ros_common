@@ -94,6 +94,11 @@ void speak(const lab_common::speakGoalConstPtr& ori_goal, actionlib::SimpleActio
 	}
 	else{
 		ROS_INFO("Action did not finish before the time out.");
+
+		//send aborted message back
+		lab_common::speakResult callResult;
+		callResult.complete = false;
+		as->setAborted(callResult, "TTS timed out");
 		return;
 	}
 }

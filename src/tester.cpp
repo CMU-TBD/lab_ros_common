@@ -67,6 +67,9 @@ int main(int argc, char **argv){
 
 	actionlib::SimpleActionClient<lab_common::speakAction> asc("lab_common/speak", true);
 	_speak("Hi, I am Joe", &asc);
+	_speak("This is a very long sentence, I'm hoping we can actually finish this", &asc);
+	_speak("This is a second sentence", &asc);
+	_speak("This is the third sentence", &asc);
 
 	/*
 	actionlib::SimpleActionClient<lab_common::playAudioAction> acp("lab_common/playAudio", true);
