@@ -126,7 +126,7 @@ class AudioController(object):
         else:
             return True
 
-    def wait_for_speak(self):
+    def wait_for_speak(self, timeout = rospy.Duration()):
         """
         Blocking function that waits until the speak finishes
         """
@@ -136,9 +136,12 @@ class AudioController(object):
         if goal_state == GoalStatus.ACTIVE:
             #only when it's active
             #we wait for result
-            self._speak_client.wait_for_result()
-            result = self._speak_client.get_result()
-            return result.complete
+            if self._speak_client.wait_for_result(timeout):
+                result = self._speak_client.get_result()
+                return result.complete
+            else:
+                #timeout
+                return False
         elif goal_state == GoalStatus.SUCCEEDED:
             #The action is done
             result = self._speak_client.get_result()
