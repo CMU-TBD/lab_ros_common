@@ -196,9 +196,10 @@ class AudioController(object):
 
 if __name__ == '__main__':
     rospy.init_node('audio_controller_test',anonymous=True)
+    ctr = AudioController()
     ctr.speak("Newell Simon Hall", False)
-    ctr.speak("Gates", False)
-    ctr.speak("Wean", False)
-    #ctr.stop_speak()
+    time.sleep(0.5)
+    ctr.stop_speak()
+    time.sleep(1)
     #print("beep")
     #ctr.speak("Hi")
