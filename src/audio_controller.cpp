@@ -78,13 +78,43 @@ void speak(const lab_common::speakGoalConstPtr& ori_goal, actionlib::SimpleActio
 		boost::shared_ptr<const lab_common::ttsResult> result = ac->getResult();
 	    ROS_INFO("Action finished: %s",state.toString().c_str());
 
+
+	    //quit if pre-empted
+	    if (as->isPreemptRequested())
+	    {
+			//set the current server as preempted
+			lab_common::speakResult callResult;
+			callResult.complete = false;
+			as->setPreempted(callResult);	
+			return;    	
+	    }
+
+	    //play the received audio tracks
 		lab_common::playAudioGoal audioGoal;
 		audioGoal.soundFile = result->soundFile;
 		audioGoal.size = result->size;
 		audioGoal.rate = 16000;
 
 		acp->sendGoal(audioGoal);
-		acp->waitForResult(); //wait for the end
+
+		//wait for result
+		bool status = false;
+		while (!status)
+		{
+			status = acp->waitForResult(ros::Duration(0.5));
+			if (as->isPreemptRequested())
+			{
+				//someone call t cancel this
+				//preempt the audio player
+				acp->cancelGoal();
+				//set the current server as preempted
+				lab_common::speakResult callResult;
+				callResult.complete = false;
+				as->setPreempted(callResult);
+				return;
+			}
+		}
+		//this mean the playing finish successfully
 		//complete now we send the result back
 	    lab_common::speakResult callResult;
 	    callResult.complete = true;
@@ -116,7 +146,6 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "audio_controller");
 	ros::NodeHandle n;
-
 
 	//create the dynamic reconfigure server
 	dynamic_reconfigure::Server<lab_common::SettingsConfig> server;

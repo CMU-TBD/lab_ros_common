@@ -108,7 +108,7 @@ bool _playSound(int8_t* data, int size, unsigned int sampleRate, ActionServer* a
   //try play sound
   int remaining = size;
   int index = 0;
-  int SIZE = 1024;
+  int SIZE = 512;
   while(remaining > SIZE){
     
     //check if the user request a stop

@@ -2,6 +2,7 @@
 #system modules
 import os
 import struct
+import time
 
 #ros packages
 import roslib
@@ -15,7 +16,8 @@ from lab_common.msg import(
     speakAction,
     speakGoal,
     speakResult
-) 
+)
+
 from actionlib_msgs.msg import *
 
 
@@ -92,7 +94,7 @@ class AudioController(object):
 
     def playAudio(self, data, rate, size, block=False):
 
-        self.stopPlaying()
+        self.stop_speak()
 
         #call the action lib for audio
         paGoal = playAudioGoal()
@@ -113,6 +115,10 @@ class AudioController(object):
 
         return -- bool:whether the action was success or not
         """
+
+        #stop the current speak if active
+        #self.stop_speak()
+
         goal = speakGoal()
         goal.text = text
         #send the goal to the client
@@ -126,13 +132,27 @@ class AudioController(object):
         else:
             return True
 
+    def stop_speak(self):
+        """
+        Preempt and cancel the current speak
+        """
+
+        #get the current state of the speak client
+        goal_state = self._speak_client.get_state()
+        #only stop if active
+        if goal_state == GoalStatus.ACTIVE:
+            self._speak_client.cancel_all_goals()
+            #wait for preempt to complete
+            self._speak_client.wait_for_result()
+            result = self._speak_client.get_result()
+            return not result.complete
+
     def wait_for_speak(self, timeout = rospy.Duration()):
         """
         Blocking function that waits until the speak finishes
         """
         #first see if there is a goal currently go on
         goal_state = self._speak_client.get_state()
-        print(goal_state)
         if goal_state == GoalStatus.ACTIVE:
             #only when it's active
             #we wait for result
@@ -172,3 +192,13 @@ class AudioController(object):
             self.acp.send_goal(paGoal)
             if block:
                 self.acp.wait_for_result()
+
+
+if __name__ == '__main__':
+    rospy.init_node('audio_controller_test',anonymous=True)
+    ctr.speak("Newell Simon Hall", False)
+    ctr.speak("Gates", False)
+    ctr.speak("Wean", False)
+    #ctr.stop_speak()
+    #print("beep")
+    #ctr.speak("Hi")
