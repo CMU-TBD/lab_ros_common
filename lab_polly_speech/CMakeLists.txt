@@ -9,7 +9,7 @@ project(lab_polly_speech)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
-  lab_common
+ ## lab_common
   roscpp
   rospy
   std_msgs
