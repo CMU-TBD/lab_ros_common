@@ -1,4 +1,4 @@
-int8[] soundFile
+uint8[] soundFile
 int32 size
 int32 rate 
 ---

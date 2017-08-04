@@ -95,7 +95,7 @@ public:
 	}
 
 	//synthesize, might have to change this to a callback
-	int synthesize(std::string str, int8_t* &outBuffer){
+	int synthesize(std::string str, uint8_t* &outBuffer){
 		//check whether initialize
 		if(!initialized){
 			ROS_INFO("not initialized");
@@ -105,9 +105,9 @@ public:
 		const char* cString = str.c_str();
 		//create a buffer for the out buffer
 		//estimate based on the string
-		int bufferSize = strlen(cString) * 1024 * 1024 * sizeof(int8_t);
+		int bufferSize = strlen(cString) * 1024 * 1024 * sizeof(uint8_t);
 		//std::cout << "bufferSize:" << bufferSize << std::endl;
-		outBuffer = (int8_t*) malloc(1024 * 1024 * sizeof(int8_t));
+		outBuffer = (uint8_t*) malloc(1024 * 1024 * sizeof(uint8_t));
 		//calculate how much text is left
 		//extra one for terminate string 
 		pico_Int16 textLeft = strlen(cString) + 1;
@@ -137,7 +137,7 @@ public:
 					std::cerr << "buffer overflow, way too big";
 					return -1;
 				}
-				memcpy(outBuffer+ptr, (int8_t*)tmpBuffer, bytesReturned);
+				memcpy(outBuffer+ptr, (uint8_t*)tmpBuffer, bytesReturned);
 				ptr += (bytesReturned);
 				// /std::cout << ptr << std::endl;
 			}
@@ -179,7 +179,7 @@ TTSServer ttsServer;
 
 void wrapperService(const lab_common::ttsGoalConstPtr& goal, ActionServer *as){
 	int size = 0;
-	int8_t* buf;	
+	uint8_t* buf;	
 	ROS_INFO("text:%s",goal->text.c_str());
 	size = ttsServer.synthesize(goal->text,buf);
 	ROS_INFO("size:%d",size);
@@ -195,12 +195,12 @@ void wrapperService(const lab_common::ttsGoalConstPtr& goal, ActionServer *as){
 	}
 
 	if(size > 0){
-		callResult.soundFile = std::vector<int8_t>(buf,buf+size);
+		callResult.soundFile = std::vector<uint8_t>(buf,buf+size);
 		callResult.size = size;
 	}	
 	else{
 		//something went wrong return empty vector
-		callResult.soundFile = std::vector<int8_t>();
+		callResult.soundFile = std::vector<uint8_t>();
 		callResult.size = 0;
 	}
 	free(buf);

@@ -2,7 +2,7 @@
 string text
 ---
 #the result
-int8[] soundFile
+uint8[] soundFile
 int32 size
 ---
 # Define a feedback message
