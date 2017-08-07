@@ -89,7 +89,7 @@ void release(){
     snd_pcm_close(playback_handle);
 }
 
-bool _playSound(int8_t* data, int size, unsigned int sampleRate, ActionServer* as){
+bool _playSound(uint8_t* data, int size, unsigned int sampleRate, ActionServer* as){
 
 	//we always set breakFlag to false
 	//since we assume its a restart every time _playSound starts
@@ -117,15 +117,28 @@ bool _playSound(int8_t* data, int size, unsigned int sampleRate, ActionServer* a
       return false;
     }
 
+
+    //play _size of the file
     int _size = SIZE/2;
     if ((err = snd_pcm_writei (playback_handle, data + index, _size)) != _size) {
+        //the PCM failed, prepare the handle again and replay the data
+        if(err == -EPIPE){
+            //fprintf (stderr, "write to audio interface failed (%s)\n",
+            //    snd_strerror (err));
+            fprintf (stderr, "preparing to restart pipe in writei\n");
+            snd_pcm_prepare(playback_handle);
+            //TODO chance of infinite loop here???
+        }
+        else{
         fprintf (stderr, "write to audio interface failed (%s)\n",
              snd_strerror (err));
+        }
     }
-    index += SIZE;
-    remaining -= SIZE;
-    //to sync it up,we going to slow down a bit here
-    //TODO  
+    else{
+        //only move the index forward if okay
+        index += SIZE;
+        remaining -= SIZE;
+    }
   }
   //play all the remaining stuff.
   
@@ -136,8 +149,11 @@ bool _playSound(int8_t* data, int size, unsigned int sampleRate, ActionServer* a
   }
 
   if (remaining > 0 && (err = snd_pcm_writei (playback_handle, data + index, remaining/2)) != remaining/2) {
-      fprintf (stderr, "write to audio interface failed (%s)\n",
-          snd_strerror (err));
+    //might be the common error, ignore
+    snd_pcm_prepare(playback_handle);
+    if((err = snd_pcm_writei (playback_handle, data + index, remaining/2)) != remaining/2){
+        fprintf(stderr, "Attempted to restart but still failed to play audio interface (%s)\n", snd_strerror (err));
+    }
   }
   //std::cout << "pre-drain" << std::endl;
   int rtn = snd_pcm_drain(playback_handle);
@@ -176,7 +192,7 @@ void playSound(const lab_common::playAudioGoalConstPtr& goal, ActionServer *as){
 
 
 	//call the new sound thread
-	int8_t* data = (int8_t*) &(goal->soundFile)[0];
+	uint8_t* data = (uint8_t*) &(goal->soundFile)[0];
 	int size = goal->size;
 	unsigned int sampleRate = (unsigned int)goal->rate;
   if(_playSound(data,size,sampleRate,as)){
