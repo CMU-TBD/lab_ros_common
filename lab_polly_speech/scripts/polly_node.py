@@ -60,6 +60,8 @@ class PollyAudioLibrary(object):
 
     def sythesized_audio_exist(self, text, voice_id):
         formatted_text = self._format_text(text)
+        if voice_id not in self._lib_list:
+            return False
         return formatted_text in self._lib_list[voice_id]
 
 
