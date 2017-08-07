@@ -39,6 +39,8 @@ class PollyAudioLibrary(object):
         file_name = voice_id + "_" + formatted_text
         with open(os.path.join(self._lib_directory,file_name),'wb') as file:
             file.write(data)
+        if voice_id not in self._lib_list:
+            self._lib_list[voice_id] = dict()
         self._lib_list[voice_id][formatted_text] = data
         
     def _format_text(self, text):
