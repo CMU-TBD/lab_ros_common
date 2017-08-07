@@ -37,8 +37,12 @@ class PollyAudioLibrary(object):
     def save_text(self, text, voice_id, data):
         formatted_text = self._format_text(text)
         file_name = voice_id + "_" + formatted_text
-        with open(os.path.join(self._lib_directory,file_name),'wb') as file:
-            file.write(data)
+        #we won't save if the file name is too long
+        if len(file_name.encode('utf8')) > 256:
+            rospy.loginfo("File name too long, not saving it in files")
+        else:
+            with open(os.path.join(self._lib_directory,file_name),'wb') as file:
+                file.write(data)
         if voice_id not in self._lib_list:
             self._lib_list[voice_id] = dict()
         self._lib_list[voice_id][formatted_text] = data
@@ -86,7 +90,7 @@ class PollyNode(object):
         
         rospy.loginfo("PollyNode ready")
 
-    def _synthesize_speech(self, text, voice_id='Joanna'):
+    def _synthesize_speech(self, text, voice_id='Brian'):
         try:
             response = self._polly.synthesize_speech(Text=text, OutputFormat='pcm',VoiceId=voice_id)
         except(BotoCoreError, ClientError) as error:
@@ -114,18 +118,20 @@ class PollyNode(object):
         #return the speech response
         #print(response)
 
-    def speak(self,text,voice_id='Joanna'):
+    def speak(self,text,voice_id='Brian'):
 
         data = self._audio_lib.find_text(text,voice_id)
         
         if data is None:
             rospy.loginfo("sythesizing speech with AWS")
-            data = self._synthesize_speech(text)
+            data = self._synthesize_speech(text, voice_id)
 
         if data is not None:
 
             #save it
             self._audio_lib.save_text(text,voice_id,data)
+
+            #
 
             goal = playAudioGoal()
             #converted_data = int(data)
