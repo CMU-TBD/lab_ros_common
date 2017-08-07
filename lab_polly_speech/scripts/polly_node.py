@@ -37,14 +37,21 @@ class PollyAudioLibrary(object):
     def save_text(self, text, voice_id, data):
         formatted_text = self._format_text(text)
         file_name = voice_id + "_" + formatted_text
+
+        if voice_id not in self._lib_list:
+            self._lib_list[voice_id] = dict()
+        
+        #we won't save it if it's already in the list    
+        if formatted_text in self._lib_list[voice_id]:
+            return 
+
         #we won't save if the file name is too long
         if len(file_name.encode('utf8')) > 256:
             rospy.loginfo("File name too long, not saving it in files")
         else:
             with open(os.path.join(self._lib_directory,file_name),'wb') as file:
                 file.write(data)
-        if voice_id not in self._lib_list:
-            self._lib_list[voice_id] = dict()
+            
         self._lib_list[voice_id][formatted_text] = data
         
     def _format_text(self, text):
