@@ -98,8 +98,16 @@ class PollyNode(object):
         rospy.loginfo("PollyNode ready")
 
     def _synthesize_speech(self, text, voice_id='Brian'):
+        
+        #this appends the pitch changes, so we can get a different voice
+        #ignore this change if it's already in ssml
+        if not text.startswith('<speak>'):
+            ammended_text = '<speak><prosody pitch="20%">{}</prosody></speak>'.format(text)
+        else:
+            ammended_text = text
+        
         try:
-            response = self._polly.synthesize_speech(Text=text, OutputFormat='pcm',VoiceId=voice_id)
+            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm',VoiceId=voice_id, TextType='ssml')
         except(BotoCoreError, ClientError) as error:
             print(error)
             return None
@@ -125,9 +133,13 @@ class PollyNode(object):
         #return the speech response
         #print(response)
 
-    def speak(self,text,voice_id='Brian'):
+    def speak(self,text,voice_id='Ivy'):
+        
+        data = None
 
-        data = self._audio_lib.find_text(text,voice_id)
+        #try finding the text if it's not an an ssml file
+        if not text.startswith('<speak>'):
+            data = self._audio_lib.find_text(text,voice_id)
         
         if data is None:
             rospy.loginfo("sythesizing speech with AWS")
@@ -135,17 +147,11 @@ class PollyNode(object):
 
         if data is not None:
 
-            #save it
-            self._audio_lib.save_text(text,voice_id,data)
-
-            #
+            #save it if not ssml file
+            if not text.startswith('<speak>'):
+                self._audio_lib.save_text(text,voice_id,data)
 
             goal = playAudioGoal()
-            #converted_data = int(data)
-            #print(len(data))
-            #converted_data = struct.unpack_from("<B",data)
-            #print(converted_data)
-            #print(type(converted_data))
             goal.soundFile = data
             goal.rate = 16000
             goal.size = len(data)

@@ -106,7 +106,7 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   ## INCLUDE_DIRS include
-  LIBRARIES lab_common
+  ## LIBRARIES lab_common
   CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs dynamic_reconfigure
   DEPENDS system_lib
 )
