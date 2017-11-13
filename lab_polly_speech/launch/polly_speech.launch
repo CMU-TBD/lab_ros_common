@@ -1,0 +1,8 @@
+<launch>
+	<group ns="lab_common">
+		<node pkg="lab_common" name="audio_Server" type="audio_node"/>
+		<node pkg="lab_common" name="tts_Server" type="tts_pico_node"/>
+		<node pkg="lab_common" name="speak_Server" type="audio_controller_node"/>
+	</group>
+    <node pkg="lab_polly_speech" name="polly_node" type="polly_node.py" />
+</launch>
