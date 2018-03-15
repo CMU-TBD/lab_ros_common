@@ -12,7 +12,7 @@ class PollySpeech(object):
         self._polly_client = actionlib.SimpleActionClient("lab_polly_speech/speak", speakAction)
         self._polly_client.wait_for_server()
 
-    def speak(self, text, block=True):
+    def speak(self, text, block=True, cancel=False):
         """
         Command the robot to speak the given text.
 
@@ -22,9 +22,14 @@ class PollySpeech(object):
             The text that the robot will speak
         block : bool, optional
             Whether this call is a blocking call.
+        cancel : bool, optional
+            Whether to cancel all the current speech request to say this instead of 
+            queue it
         """
         goal = speakGoal()
         goal.text = text
+        if cancel:
+            self._polly_client.cancel_all_goals()
         if block:
             self._polly_client.send_goal_and_wait(goal)
         else:
