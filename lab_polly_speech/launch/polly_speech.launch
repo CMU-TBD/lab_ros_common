@@ -4,5 +4,8 @@
 		<node pkg="lab_common" name="tts_Server" type="tts_pico_node"/>
 		<node pkg="lab_common" name="speak_Server" type="audio_controller_node"/>
 	</group>
-    <node pkg="lab_polly_speech" name="polly_node" type="polly_node.py" />
+    <node pkg="lab_polly_speech" name="polly_node" type="polly_node.py" output='screen'>
+		<param name="no_audio" type="bool" value="False" />
+		<param name="polly_voice_id" type="str" value="Joanna"/>
+	</node>
 </launch>

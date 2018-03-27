@@ -90,14 +90,19 @@ class PollyNode(object):
         self._audio_client.wait_for_server()
 
 
-        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", speakAction, self._speak_callback)
+        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", speakAction, self._speak_callback, auto_start=False)
+        self._speak_server.start()
 
         self._audio_lib = PollyAudioLibrary()
         self._audio_lib._scan_library()
         
+        #debug flag
+        self._no_audio_flag = rospy.get_param('polly_node/no_audio',False)
+        self._voice_id = rospy.get_param('polly_node/polly_voice_id','Ivy')
+
         rospy.loginfo("PollyNode ready")
 
-    def _synthesize_speech(self, text, voice_id='Brian'):
+    def _synthesize_speech(self, text, voice_id):
         
         #this appends the pitch changes, so we can get a different voice
         #ignore this change if it's already in ssml
@@ -124,16 +129,16 @@ class PollyNode(object):
     def _speak_callback(self, goal):
 
         text = goal.text
-        complete = self.speak(text)
+        complete = True
+        rospy.logdebug('POLLY_SPEAK:{}'.format(text))
+        if not self._no_audio_flag:
+            complete = self.speak(text, self._voice_id)
         result = speakResult()
         result.complete = complete
         self._speak_server.set_succeeded(result)
 
 
-        #return the speech response
-        #print(response)
-
-    def speak(self,text,voice_id='Ivy'):
+    def speak(self,text,voice_id):
         
         data = None
 
