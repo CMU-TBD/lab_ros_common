@@ -14,71 +14,41 @@ from contextlib import closing
 import struct
 import rospkg
 import os
+from masterfile import Item, HashTable
+
+# set hash size at 32    
+h = HashTable(10 ** 32)
 
 class PollyAudioLibrary(object):
     def __init__(self):
-        #library directory, we could save the file but use of DB will be better in the future
+        # library directory, we could save the file but use of DB will be better in the future
         rospack = rospkg.RosPack()
 
         self._lib_directory = os.path.join(rospack.get_path("lab_polly_speech"),'audio_library')
+        print(self._lib_directory)
+
         if not os.path.exists(self._lib_directory):
             os.makedirs(self._lib_directory)
-        self._lib_list = dict()
-        
-    def _scan_library(self):
-        file_list = os.listdir(self._lib_directory)
-        for file in file_list:
-            voice_id = file.split('_')[0]
-            formatted_text = file.split('_',1)[1]
-            if voice_id not in self._lib_list:
-                self._lib_list[voice_id] = dict()
-            self._lib_list[voice_id][formatted_text] = None
             
     def save_text(self, text, voice_id, data):
-        formatted_text = self._format_text(text)
-        file_name = voice_id + "_" + formatted_text
+        key = Item(voice_id, text)
+        file_name = str(h.hashing(key)) + ".mp3"
 
-        if voice_id not in self._lib_list:
-            self._lib_list[voice_id] = dict()
-        
-        #we won't save it if it's already in the list    
-        if formatted_text in self._lib_list[voice_id]:
-            return 
-
-        #we won't save if the file name is too long
-        if len(file_name.encode('utf8')) > 256:
-            rospy.loginfo("File name too long, not saving it in files")
-        else:
-            with open(os.path.join(self._lib_directory,file_name),'wb') as file:
+        # only save if unique
+        if h.find(key) == None:
+            h.insert(key)
+            with open(os.path.join(self._lib_directory, file_name),'wb') as file:
                 file.write(data)
-            
-        self._lib_list[voice_id][formatted_text] = data
-        
-    def _format_text(self, text):
-        return ('_').join(text.lower().split(' '))
 
     def find_text(self, text, voice_id):
-        formatted_text = self._format_text(text)
-        #print(formatted_text)
-        #print(self._lib_list)
-        if self.sythesized_audio_exist(text, voice_id):
-            data = self._lib_list[voice_id][formatted_text]
-            if data is None:
-                rospy.loginfo("reading audio file from disk")
-                file_name = voice_id + '_' + formatted_text
-                with open(os.path.join(self._lib_directory,file_name),'r') as file:
-                    data = file.read()
-                self._lib_list[voice_id][formatted_text] = data
+        key = Item(voice_id, text)
+        file_name = str(h.hashing(key)) + ".mp3"
+        if h.find(key) != None:
+            with open(os.path.join(self._lib_directory, file_name),'r') as file:
+                data = file.read()
             return data
-        rospy.logdebug("audiofile doesn't existing")
+        rospy.logdebug("audiofile doesn't exist")
         return None
-
-    def sythesized_audio_exist(self, text, voice_id):
-        formatted_text = self._format_text(text)
-        if voice_id not in self._lib_list:
-            return False
-        return formatted_text in self._lib_list[voice_id]
-
 
 
 class PollyNode(object):
@@ -94,25 +64,24 @@ class PollyNode(object):
         self._speak_server.start()
 
         self._audio_lib = PollyAudioLibrary()
-        self._audio_lib._scan_library()
         
-        #debug flag
-        self._no_audio_flag = rospy.get_param('polly_node/no_audio',False)
+        # debug flag
+        self._no_audio_flag = rospy.get_param('polly_node/no_audio', False)
         self._voice_id = rospy.get_param('polly_node/polly_voice_id','Ivy')
 
         rospy.loginfo("PollyNode ready")
 
     def _synthesize_speech(self, text, voice_id):
         
-        #this appends the pitch changes, so we can get a different voice
-        #ignore this change if it's already in ssml
+        # this appends the pitch changes, so we can get a different voice
+        # ignore this change if it's already in ssml
         if not text.startswith('<speak>'):
             ammended_text = '<speak><prosody pitch="20%">{}</prosody></speak>'.format(text)
         else:
             ammended_text = text
         
         try:
-            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm',VoiceId=voice_id, TextType='ssml')
+            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm', VoiceId=voice_id, TextType='ssml')
         except(BotoCoreError, ClientError) as error:
             print(error)
             return None
@@ -138,23 +107,23 @@ class PollyNode(object):
         self._speak_server.set_succeeded(result)
 
 
-    def speak(self,text,voice_id):
+    def speak(self, text, voice_id):
         
         data = None
 
-        #try finding the text if it's not an an ssml file
+        # try finding the text if it's not an an ssml file
         if not text.startswith('<speak>'):
-            data = self._audio_lib.find_text(text,voice_id)
+            data = self._audio_lib.find_text(text, voice_id)
         
         if data is None:
-            rospy.loginfo("sythesizing speech with AWS")
+            rospy.loginfo("synthesizing speech with AWS")
             data = self._synthesize_speech(text, voice_id)
 
         if data is not None:
 
-            #save it if not ssml file
+            # save it if not ssml file
             if not text.startswith('<speak>'):
-                self._audio_lib.save_text(text,voice_id,data)
+                self._audio_lib.save_text(text, voice_id, data)
 
             goal = playAudioGoal()
             goal.soundFile = data
@@ -168,8 +137,4 @@ if __name__ == '__main__':
     rospy.init_node("polly_node")
     pl = PollyNode()
     rospy.spin()
-    # pl.speak("Hello, My name is Rathu")
-    # pl.speak("Hello, My name is Rathu")
-    #print(pl._synthesize_speech("hello"))
 
-    #main()
