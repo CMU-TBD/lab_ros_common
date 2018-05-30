@@ -16,6 +16,14 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
 )
 
+#add dynamic reconfigure api
+#find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/polly.cfg
+  #...
+)
+
+add_dependencies(polly $(PROJECT_NAME)_gencfg)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -25,14 +33,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
-
-#add dynamic reconfigure api
-#find_package(catkin REQUIRED dynamic_reconfigure)
-generate_dynamic_reconfigure_options(
-  cfg/polly.cfg
-  #...
-)
-
 
 ################################################
 ## Declare ROS messages, services and actions ##

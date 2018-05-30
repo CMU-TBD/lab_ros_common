@@ -15,6 +15,12 @@ import struct
 import rospkg
 import os
 from masterfile import Item, HashTable
+#from dynamic_reconfigure.server import Server
+#from lab_polly_speech.cfg import pollyConfig
+
+#def callback(config, level):
+#    rospy.loginfo("""Voice changed to {voice_id}""".format(**config))
+#    return config
 
 # set hash size at 32    
 h = HashTable(10 ** 32)
@@ -25,7 +31,6 @@ class PollyAudioLibrary(object):
         rospack = rospkg.RosPack()
 
         self._lib_directory = os.path.join(rospack.get_path("lab_polly_speech"),'audio_library')
-        print(self._lib_directory)
 
         if not os.path.exists(self._lib_directory):
             os.makedirs(self._lib_directory)
@@ -67,12 +72,11 @@ class PollyNode(object):
         
         # debug flag
         self._no_audio_flag = rospy.get_param('polly_node/no_audio', False)
-        self._voice_id = rospy.get_param('polly_node/polly_voice_id','Ivy')
+        self._voice_id = rospy.get_param('polly_node/polly_voice_id')
 
         rospy.loginfo("PollyNode ready")
 
-    def _synthesize_speech(self, text, voice_id):
-        
+    def _synthesize_speech(self, text):
         # this appends the pitch changes, so we can get a different voice
         # ignore this change if it's already in ssml
         if not text.startswith('<speak>'):
@@ -81,7 +85,7 @@ class PollyNode(object):
             ammended_text = text
         
         try:
-            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm', VoiceId=voice_id, TextType='ssml')
+            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm', VoiceId=rospy.get_param('polly_node/polly_voice_id'), TextType='ssml')
         except(BotoCoreError, ClientError) as error:
             print(error)
             return None
@@ -101,29 +105,31 @@ class PollyNode(object):
         complete = True
         rospy.logdebug('POLLY_SPEAK:{}'.format(text))
         if not self._no_audio_flag:
-            complete = self.speak(text, self._voice_id)
+            complete = self.speak(text)
         result = speakResult()
         result.complete = complete
         self._speak_server.set_succeeded(result)
 
 
-    def speak(self, text, voice_id):
+    def speak(self, text):
         
         data = None
 
         # try finding the text if it's not an an ssml file
         if not text.startswith('<speak>'):
-            data = self._audio_lib.find_text(text, voice_id)
+	    print("Yes")
+            data = self._audio_lib.find_text(text, rospy.get_param('polly_node/polly_voice_id'))
         
         if data is None:
             rospy.loginfo("synthesizing speech with AWS")
-            data = self._synthesize_speech(text, voice_id)
+            data = self._synthesize_speech(text, rospy.get_param('polly_node/polly_voice_id'))
 
         if data is not None:
 
             # save it if not ssml file
             if not text.startswith('<speak>'):
-                self._audio_lib.save_text(text, voice_id, data)
+		print("no")
+                self._audio_lib.save_text(text, rospy.get_param('polly_node/polly_voice_id'), data)
 
             goal = playAudioGoal()
             goal.soundFile = data
@@ -135,6 +141,7 @@ class PollyNode(object):
 
 if __name__ == '__main__':
     rospy.init_node("polly_node")
+    #srv = Server(pollyConfig, callback)
     pl = PollyNode()
     rospy.spin()
 

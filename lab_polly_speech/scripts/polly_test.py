@@ -16,16 +16,14 @@ def main():
     polly_client = actionlib.SimpleActionClient("lab_polly_speech/speak", speakAction)
     polly_client.wait_for_server()
 
-    speak(polly_client, "Hello World. ")
-    speak(polly_client, "Alvaro is Awesome. ")
-    speak(polly_client, "Ceci is Cool. ")
-    speak(polly_client, "This is working really really really really really really really well")
+    speak(polly_client, "Lalalalalalalalalalalalalalalalala.")
+    
+#    speak(polly_client, "Alvaro is Awesome. ")
+#    speak(polly_client, "Ceci is Cool. ")
+#    speak(polly_client, "This is working really really really really really really really well")
     speak(polly_client,"Cats and dogs each hate the other. The pipe began to rust while new. Open the crate but don't break the glass. " + 
     "Add the sum to the product of these three. Thieves who rob friends deserve jail. The ripe taste of cheese improves with age. "+
     "Act on these orders with great speed. The hog crawled under the high fence. Move the vat over the hot fire.")
-
-
-
 
 
 if __name__ == '__main__':
