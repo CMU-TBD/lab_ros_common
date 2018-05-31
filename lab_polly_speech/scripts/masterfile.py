@@ -6,7 +6,7 @@ import os
 
 # yield accurate current working directory
 rospack = rospkg.RosPack()
-directory = os.path.join(rospack.get_path("lab_polly_speech"), "scripts/masterfile.txt")
+directory = os.path.join(rospack.get_path("lab_polly_speech"), "masterfile.txt")
 
  # class for key tuples to .txt file masterfile
 class Item:

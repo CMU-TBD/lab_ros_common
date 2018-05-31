@@ -15,12 +15,6 @@ import struct
 import rospkg
 import os
 from masterfile import Item, HashTable
-#from dynamic_reconfigure.server import Server
-#from lab_polly_speech.cfg import pollyConfig
-
-#def callback(config, level):
-#    rospy.loginfo("""Voice changed to {voice_id}""".format(**config))
-#    return config
 
 # set hash size at 32    
 h = HashTable(10 ** 32)
@@ -116,8 +110,7 @@ class PollyNode(object):
         data = None
 
         # try finding the text if it's not an an ssml file
-        if not text.startswith('<speak>'):
-	    print("Yes")
+        if not text.startswith('<speak>')
             data = self._audio_lib.find_text(text, rospy.get_param('polly_node/polly_voice_id'))
         
         if data is None:
@@ -128,7 +121,6 @@ class PollyNode(object):
 
             # save it if not ssml file
             if not text.startswith('<speak>'):
-		print("no")
                 self._audio_lib.save_text(text, rospy.get_param('polly_node/polly_voice_id'), data)
 
             goal = playAudioGoal()
@@ -141,7 +133,6 @@ class PollyNode(object):
 
 if __name__ == '__main__':
     rospy.init_node("polly_node")
-    #srv = Server(pollyConfig, callback)
     pl = PollyNode()
     rospy.spin()
 
