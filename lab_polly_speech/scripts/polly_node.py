@@ -28,7 +28,7 @@ class PollyAudioLibrary(object):
 
         if not os.path.exists(self._lib_directory):
             os.makedirs(self._lib_directory)
-            
+
     def save_text(self, text, voice_id, data):
         key = Item(voice_id, text)
         file_name = str(h.hashing(key)) + ".mp3"
@@ -48,7 +48,7 @@ class PollyAudioLibrary(object):
             return data
         rospy.logdebug("audiofile doesn't exist")
         return None
-
+    
 
 class PollyNode(object):
 
@@ -63,7 +63,7 @@ class PollyNode(object):
         self._speak_server.start()
 
         self._audio_lib = PollyAudioLibrary()
-        
+
         # debug flag
         self._no_audio_flag = rospy.get_param('polly_node/no_audio', False)
         self._voice_id = rospy.get_param('polly_node/polly_voice_id')
@@ -77,7 +77,7 @@ class PollyNode(object):
             ammended_text = '<speak><prosody pitch="20%">{}</prosody></speak>'.format(text)
         else:
             ammended_text = text
-        
+
         try:
             response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm', VoiceId=rospy.get_param('polly_node/polly_voice_id'), TextType='ssml')
         except(BotoCoreError, ClientError) as error:
@@ -101,18 +101,15 @@ class PollyNode(object):
         if not self._no_audio_flag:
             complete = self.speak(text)
         result = speakResult()
-        result.complete = complete
-        self._speak_server.set_succeeded(result)
-
-
-    def speak(self, text):
         
+    def speak(self, text):
+
         data = None
 
         # try finding the text if it's not an an ssml file
-        if not text.startswith('<speak>')
+        if not text.startswith('<speak>'):
             data = self._audio_lib.find_text(text, rospy.get_param('polly_node/polly_voice_id'))
-        
+
         if data is None:
             rospy.loginfo("synthesizing speech with AWS")
             data = self._synthesize_speech(text, rospy.get_param('polly_node/polly_voice_id'))
@@ -135,4 +132,3 @@ if __name__ == '__main__':
     rospy.init_node("polly_node")
     pl = PollyNode()
     rospy.spin()
-
