@@ -68,6 +68,7 @@ add_action_files(
 	tts.action
   playAudio.action
   speak.action
+  polly_speech.action
 )
 
 ## Generate added messages and services with any dependencies listed here

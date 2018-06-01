@@ -1,0 +1,12 @@
+# this passed to the function
+string text
+---
+#the result
+bool complete
+---
+# Define a feedback message
+float32 percent_complete
+---
+# voice_id
+string voice_id
+---

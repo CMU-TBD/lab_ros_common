@@ -5,7 +5,10 @@ from lab_common.msg import(
     playAudioGoal,
     playAudioAction,
     speakResult,
-    speakAction
+    speakAction,
+    polly_speechAction,
+    polly_speechGoal,
+    polly_speechResult
 )
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -59,7 +62,7 @@ class PollyNode(object):
         self._audio_client.wait_for_server()
 
 
-        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", speakAction, self._speak_callback, auto_start=False)
+        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", polly_speechAction, self._speak_callback, auto_start=False)
         self._speak_server.start()
 
         self._audio_lib = PollyAudioLibrary()
@@ -70,7 +73,7 @@ class PollyNode(object):
 
         rospy.loginfo("PollyNode ready")
 
-    def _synthesize_speech(self, text):
+    def _synthesize_speech(self, text, voice_id):
         # this appends the pitch changes, so we can get a different voice
         # ignore this change if it's already in ssml
         if not text.startswith('<speak>'):
@@ -79,7 +82,7 @@ class PollyNode(object):
             ammended_text = text
 
         try:
-            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm', VoiceId=rospy.get_param('polly_node/polly_voice_id'), TextType='ssml')
+            response = self._polly.synthesize_speech(Text=ammended_text, OutputFormat='pcm', VoiceId=voice_id, TextType='ssml')
         except(BotoCoreError, ClientError) as error:
             print(error)
             return None
@@ -95,30 +98,31 @@ class PollyNode(object):
 
     def _speak_callback(self, goal):
 
-        text = goal.text
+        text = goal.input
         complete = True
-        rospy.logdebug('POLLY_SPEAK:{}'.format(text))
+        rospy.logdebug('POLLY_SPEAK:{}'.format(text[0]))
         if not self._no_audio_flag:
             complete = self.speak(text)
-        result = speakResult()
+        result = polly_speechResult()
+	result.complete = complete
+	self._speak_server.set_succeeded(result)
         
     def speak(self, text):
-
         data = None
 
         # try finding the text if it's not an an ssml file
-        if not text.startswith('<speak>'):
-            data = self._audio_lib.find_text(text, rospy.get_param('polly_node/polly_voice_id'))
+        if not text[0].startswith('<speak>'):
+            data = self._audio_lib.find_text(text[0], text[1])
 
         if data is None:
             rospy.loginfo("synthesizing speech with AWS")
-            data = self._synthesize_speech(text, rospy.get_param('polly_node/polly_voice_id'))
+            data = self._synthesize_speech(text[0], text[1])
 
         if data is not None:
 
             # save it if not ssml file
-            if not text.startswith('<speak>'):
-                self._audio_lib.save_text(text, rospy.get_param('polly_node/polly_voice_id'), data)
+            if not text[0].startswith('<speak>'):
+                self._audio_lib.save_text(text[0], text[1], data)
 
             goal = playAudioGoal()
             goal.soundFile = data
