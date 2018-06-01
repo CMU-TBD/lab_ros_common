@@ -73,11 +73,12 @@ class PollyNode(object):
 
         rospy.loginfo("PollyNode ready")
 
-    def _synthesize_speech(self, text, voice_id):
+    def _synthesize_speech(self, text, voice_id, pitch):
         # this appends the pitch changes, so we can get a different voice
         # ignore this change if it's already in ssml
         if not text.startswith('<speak>'):
-            ammended_text = '<speak><prosody pitch="20%">{}</prosody></speak>'.format(text)
+	    tmp_text = '<speak><prosody pitch=' + '"' + pitch + '"' '>{}</prosody></speak>'
+            ammended_text = tmp_text.format(text)
         else:
             ammended_text = text
 
@@ -109,19 +110,20 @@ class PollyNode(object):
         
     def speak(self, text):
         data = None
+	print(text)
 
         # try finding the text if it's not an an ssml file
         if not text[0].startswith('<speak>'):
             data = self._audio_lib.find_text(text[0], text[1])
 
-        if data is None:
+        if data is None or text[2] != '20%':
             rospy.loginfo("synthesizing speech with AWS")
-            data = self._synthesize_speech(text[0], text[1])
+            data = self._synthesize_speech(text[0], text[1], text[2])
 
         if data is not None:
 
             # save it if not ssml file
-            if not text[0].startswith('<speak>'):
+            if not text[0].startswith('<speak>') and text[2] == '20%':
                 self._audio_lib.save_text(text[0], text[1], data)
 
             goal = playAudioGoal()
