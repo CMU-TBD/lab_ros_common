@@ -10,7 +10,7 @@ from lab_common.cfg import (
     PositionFFJointTrajectoryActionServerConfig,
 )
 
-def start_server(limb="both", rate=100.0, mode="velocity"):
+def start_server(limb="both", rate=100.0, mode="position_w_id"):
     print("Initializing joint trajectory action server...")
 
     if mode == 'velocity':
