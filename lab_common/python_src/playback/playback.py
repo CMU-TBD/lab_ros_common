@@ -42,7 +42,7 @@ def record(filename, rate=100.0):
     recorder.record()
 
 
-def playback(filename, arms="both", rate=100.0, mode="velocity", loops=int(raw_input("How many times should the playback loop? "))):
+def playback(filename, loops=int(raw_input("How many times should the playback loop? "))):
     while loops < 1:
         loops = int(raw_input("How many times should the playback loop?" ))
         
