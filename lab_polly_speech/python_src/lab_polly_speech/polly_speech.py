@@ -28,10 +28,10 @@ class PollySpeech(object):
             Whether to cancel all the current speech request to say this instead of 
             queue it
         """
-        goal = speakGoal()
+        goal = polly_speechGoal()
         goal.input.append(text)
-	goal.input.append(voice_id)
-	goal.input.append(pitch)
+        goal.input.append(voice_id)
+        goal.input.append(pitch)
 
         if cancel:
             self._polly_client.cancel_all_goals()
