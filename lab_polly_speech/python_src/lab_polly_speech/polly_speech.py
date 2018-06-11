@@ -21,9 +21,9 @@ class PollySpeech(object):
         text : string, required
             The text that the robot will speak
         voice_id : string, required
-	        Name of desired voice from AWS Polly Speech
+            Name of desired voice from AWS Polly Speech
         pitch : string, required 
-	        Desired pitch of voice as a percentage (ex: "20%")
+            Desired pitch of voice as a percentage (ex: "20%")
         block : bool, optional
             Whether this call is a blocking call.
         cancel : bool, optional
