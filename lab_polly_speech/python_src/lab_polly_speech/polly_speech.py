@@ -18,10 +18,12 @@ class PollySpeech(object):
 
         Parameters
         ----------
-        goal : strings, required
-        	text : The text that the robot will speak
-	    	voice_id : name of voice for AWS Polly Speech
-        	pitch : desired pitch of voice
+        text : string, required
+            The text that the robot will speak
+	    voice_id : string, required
+	        Name of desired voice from AWS Polly Speech
+	    pitch : string, required 
+	        Desired pitch of voice as a percentage (ex: "20%")
         block : bool, optional
             Whether this call is a blocking call.
         cancel : bool, optional
