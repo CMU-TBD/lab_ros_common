@@ -1,5 +1,7 @@
 # this passed to the function
 string text
+string voice_id
+string pitch
 ---
 #the result
 bool complete
@@ -7,6 +9,4 @@ bool complete
 # Define a feedback message
 float32 percent_complete
 ---
-# voice_id
-string voice_id
----
+
