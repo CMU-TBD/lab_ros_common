@@ -99,32 +99,30 @@ class PollyNode(object):
 
     def _speak_callback(self, goal):
 
-        text = goal.input
         complete = True
-        rospy.logdebug('POLLY_SPEAK:{}'.format(text[0]))
+        rospy.logdebug('POLLY_SPEAK:{}'.format(goal.text))
         if not self._no_audio_flag:
-            complete = self.speak(text)
+            complete = self.speak(goal)
         result = polly_speechResult()
-	result.complete = complete
-	self._speak_server.set_succeeded(result)
+        result.complete = complete
+        self._speak_server.set_succeeded(result)
         
-    def speak(self, text):
+    def speak(self, goal):
         data = None
-	print(text)
 
         # try finding the text if it's not an an ssml file
-        if not text[0].startswith('<speak>'):
-            data = self._audio_lib.find_text(text[0], text[1])
+        if not goal.text.startswith('<speak>'):
+            data = self._audio_lib.find_text(goal.text, goal.voice_id)
 
-        if data is None or text[2] != '20%':
+        if data is None or goal.pitch != '20%':
             rospy.loginfo("synthesizing speech with AWS")
-            data = self._synthesize_speech(text[0], text[1], text[2])
+            data = self._synthesize_speech(goal.text, goal.voice_id, goal.pitch)
 
         if data is not None:
 
             # save it if not ssml file
-            if not text[0].startswith('<speak>') and text[2] == '20%':
-                self._audio_lib.save_text(text[0], text[1], data)
+            if not goal.text.startswith('<speak>') and goal.pitch == '20%':
+                self._audio_lib.save_text(goal.text, goal.voice_id, data)
 
             goal = playAudioGoal()
             goal.soundFile = data

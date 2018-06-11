@@ -29,9 +29,9 @@ class PollySpeech(object):
             queue it
         """
         goal = polly_speechGoal()
-        goal.input.append(text)
-        goal.input.append(voice_id)
-        goal.input.append(pitch)
+        goal.text = text
+        goal.voice_id = voice_id
+        goal.pitch = pitch
 
         if cancel:
             self._polly_client.cancel_all_goals()
