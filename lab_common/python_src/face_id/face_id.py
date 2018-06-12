@@ -10,6 +10,7 @@ import rospkg
 import os
 from baxter_interface import CHECK_VERSION, CameraController
 
+
 from sensor_msgs.msg import(
     Image
 )
@@ -71,3 +72,4 @@ class CameraNode:
         # When everything is done, release the capture
         video_capture.release()
         cv2.destroyAllWindows()
+
