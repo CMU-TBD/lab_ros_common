@@ -26,7 +26,6 @@ class PollyAudioLibrary(object):
     def __init__(self):
         # library directory, we could save the file but use of DB will be better in the future
         rospack = rospkg.RosPack()
-        print(os.path.dirname(h.directory))
         self._lib_directory = os.path.join(os.path.dirname(h.directory),'audio_library')
 
         if not os.path.exists(self._lib_directory):
