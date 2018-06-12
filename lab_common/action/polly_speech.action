@@ -1,5 +1,8 @@
 #Inputs 
-string[] input
+
+string text
+string voice_id
+string pitch
 ---
 #the result
 bool complete
