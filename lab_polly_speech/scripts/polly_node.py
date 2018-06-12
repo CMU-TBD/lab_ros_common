@@ -26,8 +26,8 @@ class PollyAudioLibrary(object):
     def __init__(self):
         # library directory, we could save the file but use of DB will be better in the future
         rospack = rospkg.RosPack()
-
-        self._lib_directory = os.path.join(rospack.get_path("lab_polly_speech"),'audio_library')
+        print(os.path.dirname(h.directory))
+        self._lib_directory = os.path.join(os.path.dirname(h.directory),'audio_library')
 
         if not os.path.exists(self._lib_directory):
             os.makedirs(self._lib_directory)
@@ -39,6 +39,7 @@ class PollyAudioLibrary(object):
         # only save if unique
         if h.find(key) == None:
             h.insert(key)
+            new = open(os.path.join(self._lib_directory, file_name), 'w+')
             with open(os.path.join(self._lib_directory, file_name),'wb') as file:
                 file.write(data)
 
