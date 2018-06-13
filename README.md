@@ -13,12 +13,3 @@ Then to start the action server:
 roslaunch lab_polly_speech polly_speech.launch
 ```
 
-### Record/Playback Module
-Import in a script using:
-```
-from playback.playback import record, playback
-```
-Then to start the action server:
-```
-roslaunch lab_common playback.launch
-```
