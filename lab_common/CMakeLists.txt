@@ -97,9 +97,6 @@ add_action_files(
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
    cfg/Settings.cfg
-   cfg/PositionFFJointTrajectoryActionServer.cfg
-   cfg/PositionJointTrajectoryActionServer.cfg
-   cfg/VelocityJointTrajectoryActionServer.cfg
 )
 
 ###################################
