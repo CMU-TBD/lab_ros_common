@@ -12,4 +12,3 @@ Then to start the action server:
 ```
 roslaunch lab_polly_speech polly_speech.launch
 ```
-
