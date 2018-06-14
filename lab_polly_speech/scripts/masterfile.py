@@ -3,10 +3,7 @@
 import sys
 import rospkg
 import os
-
-# yield accurate current working directory
-rospack = rospkg.RosPack()
-directory = os.path.join(rospack.get_path("lab_polly_speech"), "masterfile.txt")
+from pathlib2 import Path
 
  # class for key tuples to .txt file masterfile
 class Item:
@@ -22,6 +19,11 @@ class HashTable:
      
     def __init__(self, size):
         self.tableSize = size
+        
+        # yield accurate current working directory
+        rospack = rospkg.RosPack()
+        directory = raw_input("In what ros package would you like your library? ")
+        self.directory = os.path.join(rospack.get_path(directory), "masterfile.txt")
 
     # hash function     
     def hashing(self, item):
@@ -29,7 +31,7 @@ class HashTable:
  
     # check for duplicate hashes
     def isDuplicate(self, hash):
-        with open(directory) as f:
+        with open(self.directory) as f:
             lines = f.readlines()
             for line in lines:
                 
@@ -49,15 +51,18 @@ class HashTable:
     def insert(self, item):
         hash = self.hashing(item)           
         x = 0
-
-        with open(directory) as f:
+        
+        if not os.path.isfile(self.directory):
+            new = open(self.directory, 'w+')
+        
+        with open(self.directory, 'rw+') as f:
             lines = f.readlines()
             x = f.tell()
             for line in lines:
                 
                 # edge case with empty file
                 if line == '\n' and len(lines) == 1:
-                    f = open(directory, 'rw+')
+                    f = open(self.directory, 'rw+')
                     f.write("(%s, %s): %i.mp3\n" % (item.speaker, item.text, hash))
                     f.close()
                     return
@@ -82,7 +87,7 @@ class HashTable:
                 f.close()
         
         # write line if not a duplicate
-        f = open(directory, 'rw+')
+        f = open(self.directory, 'rw+')
         f.seek(x)
         f.write("(%s, %s): %i.mp3\n" % (item.speaker, item.text, hash))
         f.truncate()
@@ -91,21 +96,21 @@ class HashTable:
     # return mp3 value of item
     def find(self, item):
         hash = self.hashing(item) 
-        with open(directory) as f:
-            lines = f.readlines()
+        if os.path.exists(self.directory):
+            with open(self.directory, 'rw+') as f:
+                lines = f.readlines()
 
-            # compare keys and return hash if valid
-            for line in lines:
-                if line.split(":")[0] == ("(%s, %s)" % (item.speaker, item.text)):
-                    return line.split(":")[1].lstrip().rstrip()
+                # compare keys and return hash if valid
+                for line in lines:
+                    if line.split(":")[0] == ("(%s, %s)" % (item.speaker, item.text)):
+                        return line.split(":")[1].lstrip().rstrip()
             return None
 
     # delete entry from table
     def delete(self, item):
         hash = self.hashing(item)
-        with open(directory) as f:
+        with open(self.directory) as f:
             lines = f.readlines()
-            f = open(directory, 'rw+')
             
             # exclude given line and truncate file
             for line in lines:
@@ -117,7 +122,7 @@ class HashTable:
 
     # return number of entries in file
     def numEntries(self):
-        with open(directory) as f:
+        with open(self.directory) as f:
             for i, j in enumerate(f):
                 pass
         return i+1
