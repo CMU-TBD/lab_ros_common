@@ -4,10 +4,17 @@ import rospy
 from lab_common.msg import(
     playAudioGoal,
     playAudioAction,
-    polly_speechAction,
-    polly_speechGoal,
-    polly_speechResult
 )
+
+from lab_polly_speech.msg import (
+    pollySpeechAction,
+    pollySpeechGoal,
+    pollySpeechResult
+)
+
+
+
+
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 import actionlib
@@ -24,8 +31,7 @@ class PollyAudioLibrary(object):
     def __init__(self):
         # library directory, we could save the file but use of DB will be better in the future
         rospack = rospkg.RosPack()
-
-        self._lib_directory = os.path.join(rospack.get_path("lab_polly_speech"),'audio_library')
+        self._lib_directory = os.path.join(os.path.dirname(h.directory),'audio_library')
 
         if not os.path.exists(self._lib_directory):
             os.makedirs(self._lib_directory)
@@ -37,6 +43,7 @@ class PollyAudioLibrary(object):
         # only save if unique
         if h.find(key) == None:
             h.insert(key)
+            new = open(os.path.join(self._lib_directory, file_name), 'w+')
             with open(os.path.join(self._lib_directory, file_name),'wb') as file:
                 file.write(data)
 
@@ -60,7 +67,7 @@ class PollyNode(object):
         self._audio_client.wait_for_server()
 
 
-        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", polly_speechAction, self._speak_callback, auto_start=False)
+        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", pollySpeechAction, self._speak_callback, auto_start=False)
         
         self._speak_server.register_preempt_callback(self._preempt_callback)
         self._speak_server.start()
@@ -71,13 +78,14 @@ class PollyNode(object):
         self._no_audio_flag = rospy.get_param('polly_node/no_audio', False)
         self._voice_id = rospy.get_param('polly_node/polly_voice_id')
 
-        rospy.loginfo("PollyNode2 ready")
+        rospy.loginfo("PollyNode ready")
 
-    def _synthesize_speech(self, text, voice_id):
+    def _synthesize_speech(self, text, voice_id, pitch):
         # this appends the pitch changes, so we can get a different voice
         # ignore this change if it's already in ssml
         if not text.startswith('<speak>'):
-            ammended_text = '<speak><prosody pitch="20%">{}</prosody></speak>'.format(text)
+            tmp_text = '<speak><prosody pitch=' + '"' + pitch + '"' '>{}</prosody></speak>'
+            ammended_text = tmp_text.format(text)
         else:
             ammended_text = text
 
@@ -103,13 +111,12 @@ class PollyNode(object):
 
     def _speak_callback(self, goal):
 
-        text = goal.input
         complete = True
-        rospy.logdebug('POLLY_SPEAK:{}'.format(text[0]))
+        rospy.logdebug('POLLY_SPEAK:{}'.format(goal.text))
         if not self._no_audio_flag:
-            complete = self.speak(text)
+            complete = self.speak(goal)
         #create the result
-        result = polly_speechResult()
+        result = pollySpeechResult()
         result.complete = complete
         #check if speak failed because it is being preempted
         if not complete and self._speak_server.is_preempt_requested():
@@ -117,25 +124,26 @@ class PollyNode(object):
         else:
             self._speak_server.set_succeeded(result)
         
-    def speak(self, text):
+    def speak(self, goal):
         data = None
 
         # try finding the text if it's not an an ssml file
-        if not text[0].startswith('<speak>'):
-            data = self._audio_lib.find_text(text[0], text[1])
+        if not goal.text.startswith('<speak>'):
+            data = self._audio_lib.find_text(goal.text, goal.voice_id)
 
-        if data is None:
+        if data is None or goal.pitch != '20%':
             rospy.loginfo("synthesizing speech with AWS")
-            data = self._synthesize_speech(text[0], text[1])
+            data = self._synthesize_speech(goal.text, goal.voice_id, goal.pitch)
 
         if self._speak_server.is_preempt_requested():
             return False
 
+
         if data is not None:
 
             # save it if not ssml file
-            if not text[0].startswith('<speak>'):
-                self._audio_lib.save_text(text[0], text[1], data)
+            if not goal.text.startswith('<speak>') and goal.pitch == '20%':
+                self._audio_lib.save_text(goal.text, goal.voice_id, data)
 
             goal = playAudioGoal()
             goal.soundFile = data
