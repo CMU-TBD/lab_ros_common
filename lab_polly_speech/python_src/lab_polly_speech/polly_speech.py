@@ -35,6 +35,17 @@ class PollySpeech(object):
         else:
             self._polly_client.send_goal(goal)
 
+    def stopAll(self):
+        """Stop all of the current speech executing by the robot. This will also stop
+        speech uterances from other programs
+        """
+        self._polly_client.cancel_all_goals()
+
+    def stop(self):
+        """Stop the current speech that is being executed
+        """ 
+        self._polly_client.cancel_goal()
+
     def wait(self, duration=None):
         """
         Wait for the speech to finish. Note, sometimes the last few seconds of the speech will still be playing when it ends
