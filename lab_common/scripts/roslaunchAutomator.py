@@ -43,6 +43,11 @@
 #       run it on smaller examples to make sure it works! Similarly with this
 #       file, test it on each launchfile to make sure there were no typos
 #       before the final run!
+#     - A word of warning: if you want to run multiple of these scripts at once,
+#       be sure to: 1) change the name of each concurrent instance of this node,
+#       so they don't conflict and kill one, and 2) change the name of the
+#       /simulationFinished topic so that one launchfile finishing does not
+#       cause the other iteration of this file to terminate early.
 #
 # Future Work:
 #     - Add a timeout to this file, so in case a node fails to publish to
