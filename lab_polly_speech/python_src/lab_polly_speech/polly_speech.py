@@ -12,7 +12,7 @@ class PollySpeech(object):
         self._polly_client = actionlib.SimpleActionClient("lab_polly_speech/speak", pollySpeechAction)
         self._polly_client.wait_for_server()
 
-    def speak(self, text, block=True, cancel=False, voice_id="Joanna", pitch="20%"):
+    def speak(self, text, block=True, cancel=False, voice_id="Joanna", pitch="20%", **kwargs):
         """
         Command the robot to speak the given text.
 
