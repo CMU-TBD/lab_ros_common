@@ -1,4 +1,7 @@
-# lab_ros_common
+# lab_ros_common [DEPRECATED]
+
+**DEPRECATED - use https://github.com/SUCCESS-MURI/success_polly_speech instead**
+
 Shared ROS packages that should be able to work across platforms
 
 ## Usage
