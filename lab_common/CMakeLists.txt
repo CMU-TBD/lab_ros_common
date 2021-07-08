@@ -12,9 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   dynamic_reconfigure
   std_msgs
-  trajectory_msgs
-  baxter_core_msgs
-  control_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -71,7 +68,6 @@ add_action_files(
 	tts.action
   playAudio.action
   speak.action
-  polly_speech.action
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -97,9 +93,6 @@ add_action_files(
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
    cfg/Settings.cfg
-   cfg/PositionFFJointTrajectoryActionServer.cfg
-   cfg/PositionJointTrajectoryActionServer.cfg
-   cfg/VelocityJointTrajectoryActionServer.cfg
 )
 
 ###################################
@@ -114,7 +107,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   ## INCLUDE_DIRS include
   ## LIBRARIES lab_common
-  CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs dynamic_reconfigure trajectory_msgs control_msgs
+  CATKIN_DEPENDS actionlib actionlib_msgs genmsg roscpp rospy std_msgs dynamic_reconfigure
   DEPENDS system_lib
 )
 

@@ -4,12 +4,17 @@ import rospy
 from lab_common.msg import(
     playAudioGoal,
     playAudioAction,
-    speakResult,
-    speakAction,
-    polly_speechAction,
-    polly_speechGoal,
-    polly_speechResult
 )
+
+from lab_polly_speech.msg import (
+    pollySpeechAction,
+    pollySpeechGoal,
+    pollySpeechResult
+)
+
+
+
+
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 import actionlib
@@ -62,7 +67,9 @@ class PollyNode(object):
         self._audio_client.wait_for_server()
 
 
-        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", polly_speechAction, self._speak_callback, auto_start=False)
+        self._speak_server = actionlib.SimpleActionServer("lab_polly_speech/speak", pollySpeechAction, self._speak_callback, auto_start=False)
+        
+        self._speak_server.register_preempt_callback(self._preempt_callback)
         self._speak_server.start()
 
         self._audio_lib = PollyAudioLibrary()
@@ -77,7 +84,7 @@ class PollyNode(object):
         # this appends the pitch changes, so we can get a different voice
         # ignore this change if it's already in ssml
         if not text.startswith('<speak>'):
-	    tmp_text = '<speak><prosody pitch=' + '"' + pitch + '"' '>{}</prosody></speak>'
+            tmp_text = '<speak><prosody pitch=' + '"' + pitch + '"' '>{}</prosody></speak>'
             ammended_text = tmp_text.format(text)
         else:
             ammended_text = text
@@ -97,15 +104,25 @@ class PollyNode(object):
             print("ERROR")
             return None
 
+    def _preempt_callback(self):
+        #check if audio is running
+        if self._audio_client.get_state() == actionlib.SimpleGoalState.ACTIVE:
+            self._audio_client.cancel_goal()
+
     def _speak_callback(self, goal):
 
         complete = True
         rospy.logdebug('POLLY_SPEAK:{}'.format(goal.text))
         if not self._no_audio_flag:
             complete = self.speak(goal)
-        result = polly_speechResult()
+        #create the result
+        result = pollySpeechResult()
         result.complete = complete
-        self._speak_server.set_succeeded(result)
+        #check if speak failed because it is being preempted
+        if not complete and self._speak_server.is_preempt_requested():
+            self._speak_server.set_preempted(result)
+        else:
+            self._speak_server.set_succeeded(result)
         
     def speak(self, goal):
         data = None
@@ -118,6 +135,10 @@ class PollyNode(object):
             rospy.loginfo("synthesizing speech with AWS")
             data = self._synthesize_speech(goal.text, goal.voice_id, goal.pitch)
 
+        if self._speak_server.is_preempt_requested():
+            return False
+
+
         if data is not None:
 
             # save it if not ssml file
@@ -128,7 +149,9 @@ class PollyNode(object):
             goal.soundFile = data
             goal.rate = 16000
             goal.size = len(data)
+
             self._audio_client.send_goal_and_wait(goal)
+
         return data is not None
 
 

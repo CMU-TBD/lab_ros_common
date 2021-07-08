@@ -1,3 +1,0 @@
-<launch>
-		<node pkg="lab_common" name="server" type="server.py" output="screen"/>
-</launch>

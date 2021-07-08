@@ -3,7 +3,7 @@
 import sys
 import rospkg
 import os
-from pathlib2 import Path
+import rospy
 
  # class for key tuples to .txt file masterfile
 class Item:
@@ -22,8 +22,14 @@ class HashTable:
         
         # yield accurate current working directory
         rospack = rospkg.RosPack()
-        directory = raw_input("In what ros package would you like your library? ")
-        self.directory = os.path.join(rospack.get_path(directory), "masterfile.txt")
+        #check if the masterfile already exist
+        self.directory = os.path.join(rospack.get_path('lab_polly_speech'), "masterfile.txt")
+        if not os.path.isfile(self.directory):
+            #masterfile doesn't exist, ask user where to save
+            directory = raw_input("In what ros package would you like your library? (default: lab_polly_speech)")
+            directory = directory if directory != "" else "lab_polly_speech"
+            self.directory = os.path.join(rospack.get_path(directory), "masterfile.txt")
+            rospy.loginfo('saving audio library hash to {}'.format(self.directory))
 
     # hash function     
     def hashing(self, item):

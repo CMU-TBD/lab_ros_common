@@ -9,11 +9,12 @@ project(lab_polly_speech)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
- ## lab_common
+  ## lab_common
   roscpp
   rospy
   std_msgs
   dynamic_reconfigure
+  genmsg
 )
 
 
@@ -73,17 +74,18 @@ generate_dynamic_reconfigure_options(
 # )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
+add_action_files(
+  FILES
+  pollySpeech.action
 #   Action1.action
 #   Action2.action
-# )
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   actionlib_msgs#   std_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

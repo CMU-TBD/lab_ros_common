@@ -8,5 +8,4 @@ bool complete
 ---
 # Define a feedback message
 float32 percent_complete
----
 

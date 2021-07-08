@@ -1,15 +1,15 @@
 
 import actionlib
 from actionlib_msgs.msg import GoalStatus
-from lab_common.msg import(
-    polly_speechGoal,
-    polly_speechAction
+from lab_polly_speech.msg import(
+    pollySpeechGoal,
+    pollySpeechAction
 )
 
 class PollySpeech(object):
 
     def __init__(self):
-        self._polly_client = actionlib.SimpleActionClient("lab_polly_speech/speak", polly_speechAction)
+        self._polly_client = actionlib.SimpleActionClient("lab_polly_speech/speak", pollySpeechAction)
         self._polly_client.wait_for_server()
 
     def speak(self, text, block=True, cancel=False, voice_id="Joanna", pitch="20%"):
@@ -30,7 +30,7 @@ class PollySpeech(object):
             Whether to cancel all the current speech request to say this instead of 
             queue it
         """
-        goal = polly_speechGoal()
+        goal = pollySpeechGoal()
         goal.text = text
         goal.voice_id = voice_id
         goal.pitch = pitch
@@ -41,6 +41,17 @@ class PollySpeech(object):
             self._polly_client.send_goal_and_wait(goal)
         else:
             self._polly_client.send_goal(goal)
+
+    def stopAll(self):
+        """Stop all of the current speech executing by the robot. This will also stop
+        speech uterances from other programs
+        """
+        self._polly_client.cancel_all_goals()
+
+    def stop(self):
+        """Stop the current speech that is being executed
+        """ 
+        self._polly_client.cancel_goal()
 
     def wait(self, duration=None):
         """
@@ -57,3 +68,18 @@ class PollySpeech(object):
                 result = self._polly_client.wait_for_result(duration)
             else:
                 result = self._polly_client.wait_for_result()
+
+
+import rospy
+
+def main():
+    rospy.init_node('polly_test')
+    ps = PollySpeech()
+    ps.speak("I am a scary robot",voice_id='Joanna')
+    ps.speak('Hello World',voice_id='Emma', block=False, cancel=True)
+    rospy.sleep(0.5)
+    ps.stopAll()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()
